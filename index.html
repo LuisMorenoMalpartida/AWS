@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan de Desarrollo AWS para VIGILA</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Configuración del tema Tailwind y tipografía -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'aws-blue': '#232f3e',
+                        'vigila-green': '#1abc9c',
+                        'vigila-light': '#ecf0f1',
+                        'risk-red': '#e74c3c'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos personalizados para la estética */
+        .card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .phase-button.active, .cost-button.active {
+            background-color: #1abc9c;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(26, 188, 156, 0.5);
+            transform: translateY(-1px);
+        }
+        .cost-button {
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .cost-button:disabled {
+            background-color: #95a5a6; /* Gris para deshabilitado */
+            cursor: not-allowed;
+        }
+        /* Estilo específico para el feed de video de la Fase 5 */
+        #video-feed {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            background-color: #333;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-vigila-light font-sans text-aws-blue min-h-screen p-4 sm:p-8">
+
+    <!-- Encabezado Principal -->
+    <header class="text-center mb-10 p-6 bg-white rounded-xl card">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-aws-blue">
+            Plan de Desarrollo AWS: VIGILA
+        </h1>
+        <p class="text-xl mt-2 text-gray-600">
+            Optimización de Infraestructura y Reducción de Costos (Octubre 2025)
+        </p>
+    </header>
+
+    <main class="max-w-6xl mx-auto space-y-10">
+        
+        <!-- Sección 1: Optimización de Costos (Gráfico Dinámico con Botones) -->
+        <section class="card bg-white p-6 rounded-xl">
+            <h2 class="text-3xl font-bold mb-6 border-b pb-2 border-vigila-green">
+                Estrategia de Optimización de Costos de EC2
+            </h2>
+            <div class="md:flex md:space-x-8">
+                <!-- Contenedor del Gráfico -->
+                <div class="md:w-2/3 flex items-center justify-center bg-gray-50 p-4 rounded-lg order-2 md:order-1 mb-6 md:mb-0">
+                    <canvas id="costOptimizationChart"></canvas>
+                </div>
+
+                <!-- Controles y Resultados (Mantenido el ancho para consistencia) -->
+                <div class="md:w-1/3 space-y-4 mb-6 md:mb-0 order-1 md:order-2">
+                    <h3 class="text-xl font-semibold text-aws-blue">Simulación por Aplicación de Estrategias</h3>
+                    
+                    <div id="cost-controls" class="space-y-3">
+                        <button id="btn-right-sizing" class="cost-button w-full bg-aws-blue hover:bg-vigila-green text-white font-semibold py-2 px-4 rounded-lg">
+                            Aplicar Right-Sizing (25% Ahorro)
+                        </button>
+                        <button id="btn-auto-scaling" disabled class="cost-button w-full bg-aws-blue hover:bg-vigila-green text-white font-semibold py-2 px-4 rounded-lg">
+                            Activar Auto-Scaling (10% Ahorro Adicional)
+                        </button>
+                        <button id="btn-savings-plans" disabled class="cost-button w-full bg-aws-blue hover:bg-vigila-green text-white font-semibold py-2 px-4 rounded-lg">
+                            Usar Savings Plans (15% Ahorro Final)
+                        </button>
+                        <button id="btn-reset" class="cost-button w-full bg-risk-red hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg">
+                            Reiniciar Simulación
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-vigila-green text-white rounded-lg text-center font-extrabold text-2xl">
+                        Costo Final Proyectado: <span id="finalCostDisplay">$5,000.00</span>
+                    </div>
+
+                    <div class="p-3 border border-gray-300 rounded-lg bg-white">
+                        <p class="text-sm font-semibold text-gray-700">Ahorro Acumulado:</p>
+                        <p id="totalSavingsDisplay" class="text-xl font-bold text-vigila-green">$0.00</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección 2: Fases del Proyecto (Contenido Cambiante por Botones y Gráfico/Video) -->
+        <section class="card bg-white p-6 rounded-xl">
+            <h2 class="text-3xl font-bold mb-6 border-b pb-2 border-vigila-green">
+                Fases del Proyecto
+            </h2>
+            
+            <!-- Botones de Navegación de Fases -->
+            <div id="phase-buttons" class="flex flex-wrap gap-2 mb-6 justify-center">
+                <!-- Los botones se generarán con JS -->
+            </div>
+
+            <!-- Contenedor del Contenido de la Fase -->
+            <div id="phase-content-container" class="border-t pt-4">
+                <div id="phase-content" class="bg-gray-50 p-6 rounded-lg min-h-[300px]">
+                    <!-- El contenido detallado, el gráfico o el video se insertarán aquí -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección 3: Resumen de Optimización RDS (Datos Estáticos) -->
+        <section class="card bg-white p-6 rounded-xl">
+            <h2 class="text-3xl font-bold mb-6 border-b pb-2 border-aws-blue">
+                Plan de Optimización de RDS
+            </h2>
+            <div class="grid md:grid-cols-3 gap-6 text-center">
+                <div class="p-4 bg-blue-50 border-l-4 border-aws-blue rounded-lg">
+                    <p class="text-4xl font-extrabold text-aws-blue">1.</p>
+                    <p class="mt-2 font-semibold">Right-Sizing</p>
+                    <p class="text-sm text-gray-600">Monitoreo Detallado y Escalado vertical o downsizing.</p>
+                </div>
+                <div class="p-4 bg-blue-50 border-l-4 border-aws-blue rounded-lg">
+                    <p class="text-4xl font-extrabold text-aws-blue">2.</p>
+                    <p class="mt-2 font-semibold">Optimización de Consultas</p>
+                    <p class="text-sm text-gray-600">Revisión de Slow Query Log y optimización de índices.</p>
+                </div>
+                <div class="p-4 bg-blue-50 border-l-4 border-aws-blue rounded-lg">
+                    <p class="text-4xl font-extrabold text-aws-blue">3.</p>
+                    <p class="mt-2 font-semibold">Separación de Carga</p>
+                    <p class="text-sm text-gray-600">Uso de Read Replicas para aumentar velocidad en lecturas.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Sección 4: Ciclo de Vida de S3 (Nueva Sección) -->
+        <section class="card bg-white p-6 rounded-xl">
+            <h2 class="text-3xl font-bold mb-6 border-b pb-2 border-vigila-green">
+                Estrategia de Ciclo de Vida de S3
+            </h2>
+            <p class="text-lg text-gray-700 mb-4">
+                Migración automática de objetos para optimizar el costo de almacenamiento hasta en un 95%.
+            </p>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                    <thead class="bg-aws-blue text-white">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Clase</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Costo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Latencia</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Regla de Transición</th>
+                        </tr>
+                    </thead>
+                    <tbody id="s3-tiers-body" class="bg-white divide-y divide-gray-200">
+                        <!-- El contenido se llenará con JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center mt-10 p-4 text-sm text-gray-500">
+        &copy; 2025 VIGILA - Proyecto AWS Optimización de Infraestructura | Desarrollado con datos del PDF Plan de Desarrollo.
+    </footer>
+
+    <!-- Lógica de JavaScript -->
+    <script>
+        // Datos del Plan de Desarrollo (extraídos y extendidos)
+        const projectData = {
+            ec2BaseCost: 5000, // Costo base mensual de EC2 (simulado)
+            // Simulación de ahorros por estrategia
+            savings: {
+                rightSizing: 0.25, // 25% ahorro
+                autoScaling: 0.10, // 10% ahorro adicional sobre el nuevo costo
+                savingsPlans: 0.15 // 15% ahorro final sobre el costo restante
+            },
+            phases: [
+                { id: 'fase1', name: 'Fase 1: Análisis y Diagnóstico', weeks: '1-2 Semanas', 
+                  deliverables: [
+                    { activity: 'Auditoría de Costos EC2', description: 'Análisis de uso y recomendación de ahorro.', key: 'Informe de Ahorros' },
+                    { activity: 'Evaluación de Seguridad', description: 'Revisar IAM y Grupos de Seguridad.', key: 'Reporte de Brechas' },
+                    { activity: 'Análisis de BD', description: 'Revisar rendimiento e identificar queries lentas.', key: 'Línea Base de Rendimiento' },
+                    { activity: 'Auditoría de S3', description: 'Revisar estructura y acceso.', key: 'Informe de Uso' },
+                  ],
+                  // Datos para el gráfico de radar (Escala 1 a 5)
+                  metrics: [5, 4, 3, 2, 1], // Éxito, Complejidad de Integración, Riesgo de Datos, Reversibilidad, Impacto en Latencia
+                  riskText: "Riesgo Bajo: Se centra en la recolección de datos sin cambios a producción."
+                },
+                { id: 'fase2', name: 'Fase 2: Diseño de Arquitectura', weeks: '2-3 Semanas', 
+                  deliverables: [
+                    { activity: 'Optimización de EC2', description: 'Diseño de Auto Scaling y compromisos de costo.', key: 'Arquitectura Auto Scaling' },
+                    { activity: 'Seguridad', description: 'Políticas IAM y blueprint SSM.', key: 'Diseño de Seguridad' },
+                    { activity: 'Optimización RDS', description: 'Right-sizing y réplicas.', key: 'Plan de Refactorización' },
+                    { activity: 'Ciclo de Vida S3', description: 'Reglas de Lifecycle.', key: 'Políticas de Ahorro' },
+                  ],
+                  metrics: [4, 5, 4, 3, 4],
+                  riskText: "Riesgo Medio: Diseño de Auto Scaling y políticas de seguridad requiere precisión."
+                },
+                { id: 'fase3', name: 'Fase 3: Implementación', weeks: '4-6 Semanas', 
+                  deliverables: [
+                    { activity: 'EC2 y SSM', description: 'Configurar Auto Scaling y Patch Manager.', key: 'EC2 Configurado' },
+                    { activity: 'Seguridad', description: 'Aplicar IAM y activar GuardDuty.', key: 'IAM Segura' },
+                    { activity: 'RDS', description: 'Aplicar optimizaciones.', key: 'BD Optimizada' },
+                    { activity: 'S3', description: 'Activar Lifecycle Rules.', key: 'Ahorro en Almacenamiento' },
+                  ],
+                  metrics: [3, 5, 5, 4, 5],
+                  riskText: "Riesgo Alto: Aplicación de cambios a infraestructura productiva y DB. Requiere ventana de mantenimiento."
+                },
+                { id: 'fase4', name: 'Fase 4: Pruebas y Despliegue', weeks: '1 Semana', 
+                  deliverables: [
+                    { activity: 'Prueba de Carga', description: 'Simular tráfico máximo.', key: 'Auto Scaling correcto' },
+                    { activity: 'Prueba de Costos', description: 'Medir reducción de costos.', key: 'Ahorro confirmado' },
+                    { activity: 'Despliegue', description: 'Migración a producción.', key: 'Sistema estable' },
+                  ],
+                  metrics: [5, 3, 2, 5, 2],
+                  riskText: "Riesgo Controlado: Foco en validación y estabilidad. El riesgo principal es la regresión no detectada."
+                },
+                // --- FASE 5 AGREGADA ---
+                { id: 'fase5', name: 'Fase 5: Monitorización y Mejora Continua (Vigilancia en Vivo)', weeks: 'Continuo (Ongoing)',
+                  deliverables: [
+                    { activity: 'Monitorización de Costos', description: 'Paneles de gasto diario y Cost Explorer.', key: 'Reporte Diario' },
+                    { activity: 'Gestión con SSM', description: 'Aplicación automática de parches y cumplimiento de configuraciones.', key: 'Cumplimiento Semanal' },
+                    { activity: 'Revisión Trimestral', description: 'Ajustes, mejoras y nuevas optimizaciones de arquitectura.', key: 'Reporte Trimestral' },
+                  ],
+                  metrics: [5, 1, 1, 5, 1],
+                  riskText: "Riesgo Mínimo: Fase de mantenimiento y operación, enfocada en la estabilidad a largo plazo."
+                }
+            ],
+            s3Tiers: [
+                { class: 'S3 Standard', cost: 'Alto', latency: 'ms', rule: '0-30 días', desc: 'Objetos activos, acceso frecuente.' },
+                { class: 'S3 Standard-IA', cost: 'Medio', latency: 'ms', rule: '>30 días', desc: 'Acceso infrecuente, retención a largo plazo.' },
+                { class: 'S3 Glacier Flexible Retrieval', cost: 'Bajo', latency: 'min-h', rule: '>90 días', desc: 'Datos de archivo no críticos, recuperación flexible.' },
+                { class: 'S3 Glacier Deep Archive', cost: 'Muy Bajo', latency: 'h', rule: '>180 días', desc: 'Cumplimiento normativo, recuperación a muy largo plazo.' },
+            ]
+        };
+
+        let costChart; // Gráfico de Costos
+        let phaseChart; // Gráfico de Fases (Radar)
+        let currentCost = projectData.ec2BaseCost;
+        let appliedStrategies = {
+            rightSizing: false,
+            autoScaling: false,
+            savingsPlans: false
+        };
+        let stream = null; // Variable para mantener la referencia al stream de la cámara
+
+        // --- Lógica del Gráfico de Optimización de Costos (Barra) ---
+        const ctxCost = document.getElementById('costOptimizationChart').getContext('2d');
+
+        function initializeCostChart() {
+            const data = {
+                labels: ['Costo Base Actual', 'Costo Ajustado (Simulado)', 'Costo Final Optimizado'],
+                datasets: [{
+                    label: 'Costo Mensual Estimado (USD)',
+                    data: [projectData.ec2BaseCost, projectData.ec2BaseCost, projectData.ec2BaseCost],
+                    backgroundColor: ['#e74c3c', '#f39c12', '#1abc9c'], // Rojo, Amarillo/Naranja, Verde
+                    borderColor: '#232f3e',
+                    borderWidth: 1
+                }]
+            };
+
+            const config = {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Simulación de Reducción de Costos de EC2 por Etapa',
+                            font: { size: 18, weight: 'bold' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('es-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Costo (USD)'
+                            }
+                        }
+                    }
+                }
+            };
+            
+            costChart = new Chart(ctxCost, config);
+        }
+
+        // Función principal para actualizar el gráfico y el estado de la simulación
+        function updateCostChart(strategy = null) {
+            let rsCost = projectData.ec2BaseCost;
+            let asCost = projectData.ec2BaseCost;
+            let spCost = projectData.ec2BaseCost;
+
+            if (strategy === 'rightSizing') {
+                appliedStrategies.rightSizing = true;
+            } else if (strategy === 'autoScaling') {
+                appliedStrategies.autoScaling = true;
+            } else if (strategy === 'savingsPlans') {
+                appliedStrategies.savingsPlans = true;
+            } else if (strategy === 'reset') {
+                appliedStrategies = { rightSizing: false, autoScaling: false, savingsPlans: false };
+                currentCost = projectData.ec2BaseCost;
+            }
+
+            // Aplicar efectos en cascada (para mostrar el costo "ajustado" después de RS+AS)
+            if (appliedStrategies.rightSizing) {
+                rsCost = projectData.ec2BaseCost * (1 - projectData.savings.rightSizing);
+            } else {
+                rsCost = projectData.ec2BaseCost; // Si no hay RS, el costo ajustado es el base
+            }
+
+            if (appliedStrategies.autoScaling) {
+                asCost = rsCost * (1 - projectData.savings.autoScaling); // AS se aplica sobre el costo de RS
+            } else {
+                asCost = rsCost;
+            }
+            
+            // SP siempre es el costo final optimizado
+            if (appliedStrategies.savingsPlans) {
+                spCost = asCost * (1 - projectData.savings.savingsPlans);
+            } else {
+                spCost = asCost;
+            }
+
+            // El costo final proyectado es el costo final optimizado (spCost)
+            currentCost = spCost;
+
+            // Actualizar la data del gráfico
+            costChart.data.datasets[0].data = [
+                projectData.ec2BaseCost, 
+                asCost, 
+                spCost
+            ];
+            
+            // Actualizar el estado de los botones (habilitar/deshabilitar)
+            document.getElementById('btn-right-sizing').disabled = appliedStrategies.rightSizing;
+            document.getElementById('btn-auto-scaling').disabled = !appliedStrategies.rightSizing || appliedStrategies.autoScaling;
+            document.getElementById('btn-savings-plans').disabled = !appliedStrategies.autoScaling || appliedStrategies.savingsPlans;
+
+            // Mostrar el costo final y el ahorro
+            const totalSavings = projectData.ec2BaseCost - currentCost;
+
+            document.getElementById('finalCostDisplay').textContent = 
+                new Intl.NumberFormat('es-US', { style: 'currency', currency: 'USD' }).format(currentCost);
+            
+            document.getElementById('totalSavingsDisplay').textContent = 
+                new Intl.NumberFormat('es-US', { style: 'currency', currency: 'USD' }).format(totalSavings);
+            
+            // Actualizar el gráfico
+            costChart.update();
+        }
+
+        // Asignar listeners a los nuevos botones
+        document.getElementById('btn-right-sizing').addEventListener('click', () => updateCostChart('rightSizing'));
+        document.getElementById('btn-auto-scaling').addEventListener('click', () => updateCostChart('autoScaling'));
+        document.getElementById('btn-savings-plans').addEventListener('click', () => updateCostChart('savingsPlans'));
+        document.getElementById('btn-reset').addEventListener('click', () => updateCostChart('reset'));
+
+
+        // --- Funciones de control de cámara ---
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+        }
+
+        function startCamera(videoElement) {
+            stopCamera(); // Asegura detener el stream anterior si existe
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(s => {
+                    stream = s;
+                    videoElement.srcObject = stream;
+                    videoElement.play();
+                })
+                .catch(error => {
+                    videoElement.outerHTML = `<div class="p-4 bg-risk-red/10 border border-risk-red rounded-lg text-center text-risk-red font-semibold">
+                        Error al acceder a la cámara: ${error.name}. Necesitas permisos para simular la vigilancia en vivo.
+                    </div>`;
+                    console.error("Error accessing camera: ", error);
+                });
+        }
+
+
+        // --- Lógica de Fases del Proyecto (Botones, Contenido y Gráfico/Video) ---
+
+        const phaseButtonsContainer = document.getElementById('phase-buttons');
+        const phaseContent = document.getElementById('phase-content');
+        
+        // Renderiza los botones de fase
+        function renderPhaseButtons() {
+            // Limpiar botones existentes antes de renderizar
+            phaseButtonsContainer.innerHTML = ''; 
+
+            projectData.phases.forEach(phase => {
+                const button = document.createElement('button');
+                button.id = `btn-${phase.id}`;
+                // Si es la Fase 5, añade (Cámara) al texto del botón
+                button.textContent = phase.id === 'fase5' ? 'Monitorización (Cámara)' : phase.name.split(': ')[1]; 
+                button.title = phase.name; // Tooltip con el nombre completo
+                button.className = 'phase-button bg-aws-blue hover:bg-vigila-green text-white font-semibold py-2 px-4 rounded-full transition duration-300 text-sm md:text-base';
+                button.dataset.phaseId = phase.id;
+                button.addEventListener('click', () => displayPhaseContent(phase.id));
+                phaseButtonsContainer.appendChild(button);
+            });
+        }
+        
+        // Crea y actualiza el gráfico de radar para la fase (NO aplica a Fase 5)
+        function renderPhaseChart(phaseData) {
+            const chartCanvas = document.getElementById('phaseChart');
+            if (!chartCanvas) return; 
+
+            const data = {
+                labels: [
+                    'Éxito Proyectado',
+                    'Complejidad de Integración',
+                    'Riesgo de Regresión (Data)',
+                    'Reversibilidad del Cambio',
+                    'Impacto en Latencia'
+                ],
+                datasets: [{
+                    label: 'Puntuación (1=Bajo, 5=Alto)',
+                    data: phaseData.metrics,
+                    fill: true,
+                    backgroundColor: 'rgba(26, 188, 156, 0.2)', // vigila-green con transparencia
+                    borderColor: '#1abc9c', // vigila-green
+                    pointBackgroundColor: '#232f3e', // aws-blue
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#232f3e'
+                }]
+            };
+
+            const config = {
+                type: 'radar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Puntos Críticos de la Fase (Radar Score)',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.1)' },
+                            grid: { color: 'rgba(0,0,0,0.1)' },
+                            pointLabels: {
+                                font: { size: 10, weight: 'bold' }
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 5,
+                            ticks: { display: false } // Ocultar números del eje
+                        }
+                    }
+                }
+            };
+
+            // Destruir el gráfico anterior si existe
+            if (phaseChart) {
+                phaseChart.destroy();
+            }
+
+            phaseChart = new Chart(chartCanvas, config);
+        }
+
+
+        // Muestra el contenido de la fase seleccionada
+        function displayPhaseContent(phaseId) {
+            const selectedPhase = projectData.phases.find(p => p.id === phaseId);
+            if (!selectedPhase) return;
+
+            // Detener la cámara si no es la Fase 5
+            if (phaseId !== 'fase5') {
+                stopCamera();
+            }
+
+            // 1. Actualizar el estado de los botones
+            document.querySelectorAll('.phase-button').forEach(btn => {
+                btn.classList.remove('active', 'bg-vigila-green');
+                btn.classList.add('bg-aws-blue');
+            });
+            document.getElementById(`btn-${phaseId}`).classList.add('active', 'bg-vigila-green');
+            document.getElementById(`btn-${phaseId}`).classList.remove('bg-aws-blue');
+
+
+            // 2. Generar el contenido HTML
+            let htmlContent = `
+                <h3 class="text-3xl font-extrabold text-aws-blue mb-2">${selectedPhase.name}</h3>
+                <p class="text-xl font-semibold text-vigila-green mb-4">Duración: ${selectedPhase.weeks}</p>
+
+                <div class="grid lg:grid-cols-2 gap-6">
+                    <!-- Columna de Gráfico/Video -->
+                    <div class="bg-white p-4 rounded-lg shadow-inner flex flex-col justify-center">
+            `;
+
+            if (phaseId === 'fase5') {
+                // Contenido para la vigilancia en vivo
+                htmlContent += `
+                        <h4 class="text-xl font-bold mb-3 text-center text-aws-blue">Simulación de VideoVigilancia (VIGILA)</h4>
+                        <video id="video-feed" autoplay playsinline></video>
+                        <p class="mt-4 text-center font-semibold text-gray-700 text-sm">
+                            Estado: Monitorización Activa. (Simulando la latencia ultrabaja de AWS.)
+                        </p>
+                `;
+            } else {
+                // Contenido para el gráfico de radar
+                 htmlContent += `
+                        <canvas id="phaseChart"></canvas>
+                        <p class="mt-4 text-center font-semibold text-risk-red text-sm">
+                            Riesgo de Fase: ${selectedPhase.riskText}
+                        </p>
+                 `;
+            }
+            
+            htmlContent += `
+                    </div>
+
+                    <!-- Columna de Entregables -->
+                    <div class="space-y-4 max-h-[400px] overflow-y-auto">
+                        <h4 class="text-xl font-bold border-b pb-1 text-aws-blue">Actividades Clave</h4>
+            `;
+
+            selectedPhase.deliverables.forEach(item => {
+                htmlContent += `
+                    <div class="p-3 bg-gray-100 rounded-lg shadow-sm border-l-4 border-vigila-green">
+                        <p class="font-bold text-base">${item.activity} <span class="text-sm text-aws-blue font-normal ml-2">(${item.key})</span></p>
+                        <p class="text-gray-700 text-sm mt-1">${item.description}</p>
+                    </div>
+                `;
+            });
+            
+            htmlContent += `
+                    </div>
+                </div>
+            `;
+
+            // 3. Insertar el contenido
+            phaseContent.innerHTML = htmlContent;
+
+            // 4. Iniciar la cámara o Renderizar el gráfico
+            if (phaseId === 'fase5') {
+                const videoElement = document.getElementById('video-feed');
+                if (videoElement) {
+                    startCamera(videoElement);
+                }
+            } else {
+                // Solo si no es la Fase 5, renderiza el gráfico de radar
+                renderPhaseChart(selectedPhase);
+            }
+        }
+        
+        // Función para renderizar la tabla de S3
+        function renderS3Tiers() {
+            const s3Body = document.getElementById('s3-tiers-body');
+            let rows = '';
+
+            projectData.s3Tiers.forEach(tier => {
+                rows += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-aws-blue">${tier.class}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${tier.cost}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${tier.latency}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${tier.rule}</td>
+                    </tr>
+                `;
+            });
+            s3Body.innerHTML = rows;
+        }
+
+
+        // Inicialización al cargar la página
+        window.onload = function() {
+            // Inicializar el gráfico de costos
+            initializeCostChart();
+            updateCostChart('reset'); // Mostrar el estado inicial de base cost
+
+            // Renderizar botones de fase
+            renderPhaseButtons();
+            // Mostrar la Fase 1 por defecto
+            displayPhaseContent('fase1');
+            
+            // Renderizar tabla S3
+            renderS3Tiers();
+        };
+
+        // Detener la cámara al salir de la página (por si acaso)
+        window.addEventListener('beforeunload', stopCamera);
+    </script>
+
+</body>
+</html>
